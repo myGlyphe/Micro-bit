@@ -10,3 +10,5 @@ and then to invoke environment run `py -m venv c:\path\to\myenv` or run the acti
 To install dependencies run `py -m pip install -r requirements.txt`
 
 The included shell.py is a Python file to interact with the database using raw SQL inputs.
+
+Start the webserver using `py app.py` or `flask run`.
