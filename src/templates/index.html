@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Micro:bit Temperature & Light level</title>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(() => {
+            namespace = "/test";
+            const socket = io(namespace);
+
+            document.getElementById("logsButton").onclick = () => {
+                location.href = "http://localhost:5000/logs";
+            };
+
+            socket.on("my_response", (msg, cb) => {
+                $("#log").append("<br>" + $("<div/>").text(new Date().toLocaleString().toString() + " | Received: " + msg.data).html());
+                if (cb)
+                    cb();
+            });
+
+            let ping_pong_times = [];
+            let start_time;
+            window.setInterval(() => {
+                start_time = (new Date).getTime();
+                socket.emit("my_ping");
+            }, 1000);
+
+            socket.on("my_pong", () => {
+                const latency = (new Date).getTime() - start_time;
+                ping_pong_times.push(latency);
+                ping_pong_times = ping_pong_times.slice(-30);
+                let sum = 0;
+                for (let i = 0; i < ping_pong_times.length; i++)
+                    sum += ping_pong_times[i];
+                $("#ping-pong").text(Math.round(10 * sum / ping_pong_times.length) / 10);
+            });
+
+            socket.on("temp_lightlevel", (data) => {
+                $("#temperature").text(data.temp);
+                $("#light-level").text(data.light);
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Micro:bit Temperature & Light level</h1>
+    <p>Async mode set to: <b>{{ async_mode }}</b></p>
+    <p>Latency: <b><span id="ping-pong"></span>ms</b></p>
+    <p>Temperature (Celcius): <b><span id="temperature"></span></b></p>
+    <p>Light level: <b><span id="light-level"></span></b></p>
+    <button id="logsButton" class="float-left submit-button" >Logs</button>
+    <h2>Alerts:</h2>
+    <div id="log"></div>
+</body>
+</html>

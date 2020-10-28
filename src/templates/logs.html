@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Logs</title>
+    <script src="//code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(() => {
+            namespace = "/test";
+            const socket = io(namespace);
+
+            document.getElementById("indexButton").onclick = () => {
+                location.href = "http://localhost:5000/";
+            };
+
+            socket.emit("get_logs");
+            socket.on("append_logs", (logs) => {
+                $("#log").empty();
+                for (let i = 0; i < logs.length; i++) {
+                    $("#log").append("<br>" + $("<div/>").text(logs[i][0].toString() + " " + logs[i][1].toString() +
+                        " | Temperature: " + logs[i][2].toString() + " Celcius, Light level: " + logs[i][3].toString()).html());
+                }
+            });
+
+            let ping_pong_times = [];
+            let start_time;
+            window.setInterval(() => {
+                start_time = (new Date).getTime();
+                socket.emit("my_ping");
+            }, 1000);
+
+            socket.on("my_pong", () => {
+                const latency = (new Date).getTime() - start_time;
+                ping_pong_times.push(latency);
+                ping_pong_times = ping_pong_times.slice(-30);
+                let sum = 0;
+                for (let i = 0; i < ping_pong_times.length; i++)
+                    sum += ping_pong_times[i];
+                $("#ping-pong").text(Math.round(10 * sum / ping_pong_times.length) / 10);
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Logs</h1>
+    <p>Async mode set to: <b>{{ async_mode }}</b></p>
+    <p>Latency: <b><span id="ping-pong"></span>ms</b></p>
+    <button id="indexButton" class="float-left submit-button" >Home</button>
+    <h2>Logs:</h2>
+    <div id="log"></div>
+</body>
+</html>
