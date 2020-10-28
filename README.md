@@ -9,7 +9,7 @@ To run, simply create a virtual environment using `py -m venv /path/to/new/virtu
 and then to invoke environment run `py -m venv c:\path\to\myenv` or run the activate.bat file inside the Scripts folder in the environment.
 To install dependencies run `py -m pip install -r requirements.txt`, make sure you're located inside the /src folder.
 
-Createthe database by running `py database.py`
+Create the database by running `py database.py`
 To recreate the database, simply delete the file `logs.db` and run `py database.py` again.
 
 Start the webserver using `py app.py` or `flask run`.
